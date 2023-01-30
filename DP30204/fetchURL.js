@@ -31,8 +31,11 @@ const fetchPage = async function ({ canonicalURL, requestURL, requestOptions, he
 
 }
 
-const getPage = async function ({ canonicalURL, requestURL, requestOptions, headers }) {
+const sanitizePage = async function ({ canonicalURL, requestURL, requestOptions, headers }) {
     const responsePage = await fetchPage({ canonicalURL, requestURL, requestOptions, headers })
+    const html = await responsePage.response.text()
+    
+  
     responsePage.response.headers.set('Content-Type', 'text/html; charset=utf-8')
     return responsePage
 
@@ -43,7 +46,7 @@ async function fetchURL ({ canonicalURL, headers }) {
       return []
     }
     const requestURL = null
-    if (canonicalURL.startsWith('https://tjajal.gob.mx/boletines?1=1&page=')) {
+    if (canonicalURL.startsWith('https://tjajal.gob.mx/boletines/details?exp=')) {
         return await getPage({ canonicalURL, requestURL, headers })
 }
   }
