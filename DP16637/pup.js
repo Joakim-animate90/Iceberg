@@ -1,19 +1,3 @@
-async function fetchPage({ canonicalURL, requestURL, requestOptions, headers }) {
-    if (!requestOptions) requestOptions = { method: "GET", headers };
-    if (!canonicalURL) canonicalURL = requestURL;
-    if (!requestURL) requestURL = canonicalURL;
-    requestOptions.agent = new https.Agent({ rejectUnauthorized: false, keepAlive: true });
-
-    return await fetchWithCookies(requestURL, requestOptions)
-        .then(response => {
-            return {
-                canonicalURL,
-                request: Object.assign({ URL: requestURL }, requestOptions),
-                response
-            };
-        });
-}
-
 async function home({ canonicalURL, headers }) {
     let responses = []
     const page = await puppeteerManager.newPage({
@@ -54,6 +38,7 @@ async function home({ canonicalURL, headers }) {
         })
     );
     let i = 1
+
     while (true) {
         const paginationLink = await page.$(`a[data-dt-idx="${i}"]`);
         if (!paginationLink) break; // Break the loop if there are no more pages
@@ -83,11 +68,9 @@ async function home({ canonicalURL, headers }) {
 }
 
 async function fetchURL({ canonicalURL, headers }) {
-    if (/embed/i.test(canonicalURL)) {
+    // https://wl.superfinanciera.gov.co/SiriWeb/publico/sancion/rep_sanciones_general.jsf?page=1
 
-        return await home({ canonicalURL, headers });
-    } else {
-        return [await fetchPage({ canonicalURL, headers })]
-    }
+
+    return await home({ canonicalURL, headers });
 
 }
