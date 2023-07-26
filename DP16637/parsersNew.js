@@ -25,7 +25,8 @@ async function parsePage({ URL, responseBody, html, responseURL }) {
                 //convert date 15 Feb 2005 to iso format using moment
             let date = moment(dateOriginale, 'DD MMM YYYY')
             date && date.isValid() ? date = moment(dateOriginale, 'DD MMM YYYY').format('YYYY-MM-DD') : date = null
-
+                //get the year from date
+            let year = date ? moment(date, 'YYYY-MM-DD').year() : null
             let documentType = $(cells[3]).text().trim() || null
             let summary = $(cells[4]).text().trim() || null
 
@@ -38,7 +39,7 @@ async function parsePage({ URL, responseBody, html, responseURL }) {
                 documentType: documentType,
                 summary: summary,
                 date: date,
-                year: null,
+                year: year,
                 URL: [URL, decodeURI(URL), encodeURI(decodeURI(URL))].filter((c, i, a) => a.indexOf(c) === i),
 
             };
