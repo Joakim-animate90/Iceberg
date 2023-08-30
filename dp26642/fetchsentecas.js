@@ -18,9 +18,6 @@ const getLinksAndModify = async function ({argument, canonicalURL, responsePage}
     const $ = cheerio.load(html);
     let pagination = $('ul.pagination');
     let links = pagination.find('li');
-    let startDate = moment(argument.from).format('YYYY-MM-DD')
-    let endDate = moment(argument.to).format('YYYY-MM-DD')
-   //throw new Error(JSON.stringify({argument}))
     if(links){
         links.each((i, elem)=>{
 
@@ -30,10 +27,10 @@ const getLinksAndModify = async function ({argument, canonicalURL, responsePage}
         let page = $(link).text().trim()
 
         if(i === links.length - 1){
-            let url = `https://jurisprudencia.tjto.jus.br/consulta.php?q=Tocantins&start=${start}&rows=${rows}&documentType=acordao&startDate=${startDate}&endDate=${endDate}&page=${page}&last=1`
+            let url = `https://jurisprudencia.tjto.jus.br/consulta.php?q=Tocantins&start=${start}&rows=${rows}&documentType=monocratica&startDate=${argument.from}&endDate=${argument.to}&page=${page}&last=1`
             $(link).attr('href', url)
         }else{
-            let url  = `https://jurisprudencia.tjto.jus.br/consulta.php?q=Tocantins&start=${start}&rows=${rows}&documentType=acordao&startDate=${argument.from}&endDate=${argument.to}&page=${page}&last=0`
+            let url  = `https://jurisprudencia.tjto.jus.br/consulta.php?q=Tocantins&start=${start}&rows=${rows}&documentType=monocratica&startDate=${argument.from}&endDate=${argument.to}&page=${page}&last=0`
             $(link).attr('href', url)
         }
 
@@ -72,7 +69,7 @@ const getHomeAndFilter = async function ({argument, canonicalURL, headers}) {
         data["start"] = `0`;
         data["rows"] = `20`;
         data["q"] = `Tocantins`;
-        data["tipo_decisao_acordao"] = `on`;
+        data["dec_monocrativa_is2G_true"] = `on`;
         data["tip_criterio_data"] = `RELEV`;
         data["dat_jul_ini"] = `${startDate}`;
         data["dat_jul_fim"] = `${endDate}`;
@@ -115,24 +112,21 @@ const getPaginations = async function ({argument, canonicalURL, headers}) {
         start = queryParams.start
         rows = queryParams.rows
         let last = queryParams.last
-        let startDate = getSharedVariable('startDate')
-        startDate = moment(startDate).format('DD/MM/YYYY')
-        let endDate = getSharedVariable('endDate')
-        endDate = moment(endDate).format('DD/MM/YYYY')
+        let startDate = argument.from.format('DD/MM/YYYY')
+        let endDate = argument.to.format('DD/MM/YYYY')
         argument.from = startDate
         argument.to = endDate
-        throw new Error(JSON.stringify({argument}))
 
         data["start"] = `${start}`;
         data["rows"] = `${rows}`;
         data["q"] = `Tocantins`;
-        data["tipo_decisao_acordao"] = `on`;
+        data["dec_monocrativa_is2G_true"] = `on`;
         data["tip_criterio_data"] = `RELEV`;
         data["dat_jul_ini"] = `${startDate}`;
         data["dat_jul_fim"] = `${endDate}`;
         data["numero_processo"] = ``;
         let body = querystring.stringify(data);
-       // throw new Error(JSON.stringify({body}))
+        //throw new Error(JSON.stringify({body}))
         let method = "GET";
         let requestOptions = {method, headers: _headers};
         let requestURL = `https://jurisprudencia.tjto.jus.br/consulta.php?${body}`;
@@ -140,6 +134,7 @@ const getPaginations = async function ({argument, canonicalURL, headers}) {
         let responsePage = await fetchPage({canonicalURL, requestURL, requestOptions});
         if(last)
             responsePage = await getLinksAndModify({argument, canonicalURL, responsePage})
+ 
         return responsePage;
 };
 
@@ -178,21 +173,16 @@ async function fetchURL({ canonicalURL, headers }) {
         return [];
     }
     let argument = {}
-    const match = canonicalURL.match(/last=(.+)/i);
-    
+    const match = canonicalURL.match(/startDate=(.+)&endDate=(.+)&page=(.+)&last=(.+)/i);
+
     if (match) {
-        const queryString = canonicalURL.split('?')[1];
-        const queryParams = querystring.parse(queryString);
-      //  throw new Error(JSON.stringify({queryParams}))
-        let from = moment(queryParams.startDate);
-        let to = moment(queryParams.endDate);
-        let page = parseInt(queryParams.page)
-        let last = queryParams.last
-        argument.from = moment(from)
-        argument.to = moment(to)
-        setSharedVariable('endDate', argument.to)
-        setSharedVariable('startDate', argument.from)
-        //throw new Error(JSON.stringify({argument}))
+        
+        let from = moment(match[1]);
+        let to = moment(match[2]);
+        let page = match[3] ? parseInt(match[3]) : 1;
+        let last = match[4] ? parseInt(match[4]) : 1;
+        argument.from = from
+        argument.to = to
         argument.page = page
         if(page === 1){
             return [await getHomeAndFilter({argument, canonicalURL, headers})]
@@ -202,7 +192,7 @@ async function fetchURL({ canonicalURL, headers }) {
                 argument.last = true
             else
                 argument.last = false
-         
+              
             return [await getPaginations({argument, canonicalURL, headers})]
 
         }
