@@ -67,14 +67,17 @@ async function home({ canonicalURL, headers }) {
     try {
         const page = await puppeteerManager.newPage();
         console.log('Connected! Navigating to https://www.msp.gob.do/web/Transparencia/base-legal-resoluciones/...');
+
         await page.goto(canonicalURL);
         await page.waitForSelector('[href]', { timeout: 15000 });
+
         console.log('Navigated! Scraping page content...');
         let responseBody = await page.evaluate(() => document.body.innerHTML);
-        let cleanedResponseBody = responseBody.replace(/<\/a><\/div><\/li>/g,'') 
 
+        let cleanedResponseBody = responseBody.replace(/<\/a><\/div><\/li>/g,'') 
         cleanedResponseBody = removeHTMLTags(cleanedResponseBody)
         cleanedResponseBody = JSON.parse(cleanedResponseBody);
+
         const response = {
             statusCode: 200,
             headers: {
@@ -82,10 +85,11 @@ async function home({ canonicalURL, headers }) {
             },
             body: JSON.stringify(cleanedResponseBody),
         };
+        
         console.log(response)
         return [response]
     } finally {
-       // await page.close();
+        await puppeteerManager.close();
     }
 
 }
@@ -96,7 +100,11 @@ async function home({ canonicalURL, headers }) {
 
 async function performFetchForUrls(urls) {
   for (const url of urls) {
-    await fetchURL({ canonicalURL: url });
+    try {
+      await fetchURL({ canonicalURL: url });
+    } catch (error) {
+      console.error(`Error fetching URL: ${url}`, error);
+    }
   }
 }
 
@@ -115,25 +123,45 @@ async function fetchURL({ canonicalURL, headers }) {
 }
 
 async function main() {
-    let getSeedsList = await getSeeds();
+    const getSeedsList = await getSeeds();
+    const failedURLs = [];
     
-    for (let i = 0; i < getSeedsList.length; i++) {
- 
-        let canonicalURL = getSeedsList[i];
-        let response = await home({canonicalURL}).catch(err => {
-             console.error(err.stack || err);
-             process.exit(1);
-        });
+    for (const canonicalURL of getSeedsList) {
+        try {
+            const response = await home({canonicalURL});
+            const { body, headers } = response[0];
+            const discover = discoverLinks({ content: body, contentType: headers['Content-Type'], canonicalURL });
+            await performFetchForUrls(discover);
+        } catch (err) {
+            console.error(err.stack || err);
+            failedURLs.push(canonicalURL);
+        }
+    }
+    
+    await retryFailedURLs(failedURLs, 5);
+}
 
-        let content = response[0].body
-        let contentType = response[0].headers['Content-Type']
-
-        console.log(content)
-        console.log(contentType)
-
-        let discover = discoverLinks({ content, contentType, canonicalURL }) 
-
-        await performFetchForUrls(discover)
+async function retryFailedURLs(failedURLs, maxRetries) {
+    for (const canonicalURL of failedURLs) {
+        let retryCount = 0;
+        
+        while (retryCount < maxRetries) {
+            try {
+                const response = await home({canonicalURL});
+                const { body, headers } = response[0];
+                const discover = discoverLinks({ content: body, contentType: headers['Content-Type'], canonicalURL });
+                await performFetchForUrls(discover);
+                break; // Retry successful, exit loop
+            } catch (err) {
+                console.error(`Error fetching URL: ${canonicalURL}, Retrying...`);
+                retryCount++;
+            }
+        }
+        
+        if (retryCount === maxRetries) {
+            console.error(`Max retry attempts reached for URL: ${canonicalURL}`);
+            process.exit(1);
+        }
     }
 }
 
