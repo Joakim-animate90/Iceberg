@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
+    "crypto": "^1.0.1",
     "csv-parse": "^5.3.10",
     "csv-parser": "^3.0.0",
     "fetch-cookie": "^2.1.0",

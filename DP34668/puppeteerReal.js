@@ -50,25 +50,50 @@ const parseCheckIfCorrectPagination = async function({ canonicalURL, responsePag
 };
 
 
+
+
+
+const AUTH = 'brd-customer-hl_c6129ab6-zone-scraping_browser1:j6x7j107kgpw'
+const SBR_WS_ENDPOINT = `wss://${AUTH}@brd.superproxy.io:9222`;
+
+
+
 async function home({ canonicalURL, headers }) {
 
+    // let puppeteerManager= await puppeteer.launch({
+    //     headless: false,
+    //    })
 
-
-    const puppeteerManager = await puppeteer.launch({ headless: false, ignoreDefaultArgs: ['--disable-extensions', '--ignore-certificate-errors'] })
-    const page = await puppeteerManager.newPage({
-        incognito: true,
-        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
-        downloadContentTypes: ["application/pdf"]
+     let puppeteerManager = await puppeteer.connect({
+        browserWSEndpoint: `wss://${AUTH}@zproxy.lum-superproxy.io:9222`,
     });
+    //launch puppeteer
 
+ 
 
-    console.log("GOTO>>>>>> " + '');
-    await page.goto('https://www.portaltransparencia.cl/PortalPdT/directorio-de-organismos-regulados/?org=AW004&pagina=58316896', {
-        waitUntil: 'load',
-        timeout: 60000
-    }).catch((err) => {
-        console.error("Page did not load.", err)
-    });
+    // const page = await puppeteerManager.newPage({
+    //     incognito: true,
+    //     userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
+    //     downloadContentTypes: ["application/pdf"]
+    // });
+    try {
+        const page = await puppeteerManager.newPage();
+        console.log('Connected! Navigating to https://www.msp.gob.do/web/Transparencia/base-legal-resoluciones/...');
+        await page.goto('https://www.msp.gob.do/web/Transparencia/base-legal-resoluciones/');
+        await page.waitForTimeout(3000);
+        // CAPTCHA handling: If you're expecting a CAPTCHA on the target page, use the following code snippet to check the status of Scraping Browser's automatic CAPTCHA solver
+        // const client = await page.createCDPSession();
+        console.log('Waiting captcha to solve...');
+        // const { status } = await client.send('Captcha.waitForSolve', {
+        //     detectTimeout: 10000,
+        // });
+        // console.log('Captcha solve status:', status);
+        console.log('Navigated! Scraping page content...');
+        const html = await page.content();
+        console.log(html)
+    } finally {
+        //await browser.close();
+    }
 
     return;
     //  <input style="width: 73px;" alt="Dia - Mes - Año" id="contentSV:frm2:idFechaDesde.day" name="contentSV:frm2:idFechaDesde.day" size="2" maxlength="2" value="01">

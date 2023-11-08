@@ -1,3 +1,19 @@
+async function fetchPage({canonicalURL, requestURL, requestOptions, headers, noProxy=false}) {
+    if (!requestOptions) requestOptions = {method: "GET", headers};
+    if (!canonicalURL) canonicalURL = requestURL;
+    if (!requestURL) requestURL = canonicalURL;
+  	if (requestURL.match(/^https/i)) {
+        requestOptions.agent = new https.Agent({rejectUnauthorized: false, keepAlive: true});
+    }
+  	return await fetchWithCookies(requestURL, requestOptions, noProxy ? "no-proxy" : "zone-g1-country-co")
+        .then(response => {
+            return {
+                canonicalURL,
+                request: Object.assign({URL: requestURL}, requestOptions),
+                response
+            };
+        });
+}
 async function fetchPage({canonicalURL, requestURL, requestOptions, headers}) {
     if (!requestOptions) requestOptions = {method: "GET", headers};
     if (!canonicalURL) canonicalURL = requestURL;
@@ -117,7 +133,6 @@ const binaryDownload = async function ({canonicalURL, requestURL, headers, reque
     }
     return responsePage;
 };
-
 async function fetchURL({canonicalURL, headers}) {
     if (/https?:.*https?:/i.test(canonicalURL)) {
         console.error("Rejecting URL", canonicalURL, `returning [];`);
@@ -135,11 +150,12 @@ async function fetchURL({canonicalURL, headers}) {
         let friendlyName = isMetadataPage[2].replace(/https?/, 'https')
         return [await getMetadataPage({domain, friendlyName, canonicalURL, headers})]
       
-    } else if (/\/drive\.google\.com\/uc\?/.test(canonicalURL)) {
-        //return [await getContentURL({canonicalURL, headers})]
+    } else if (/export=download/.test(canonicalURL)) {
+
         return [await binaryDownload({canonicalURL, headers})];
     
   } else {
+    
         //return defaultFetchURL({canonicalURL, headers});
       	return [await fetchPage({canonicalURL, headers})];
     }
