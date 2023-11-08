@@ -1,0 +1,13 @@
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=2848&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=2048&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1633&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1390&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1003&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1004&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1005&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1404&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1405&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1406&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1730&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=2249&rootcat=25&page=&orderCol=ordering&orderDir=asc
+https://www.msp.gob.do/web/Transparencia/wp-admin/admin-ajax.php?juwpfisadmin=false&action=wpfd&task=files.display&view=files&id=1557&rootcat=25&page=&orderCol=ordering&orderDir=asc
