@@ -7,8 +7,9 @@ This application is designed to crawl a specific site.
 
 ## Installation
 
-docker build -t dp489808:v1 .
-docker run -p 3000:3000 -it dp489808:v1
+1. docker build -t dp489808:v1 .
+
+2. docker run -p 3000:3000 -it dp489808:v1
 
 
 ## License
