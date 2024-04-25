@@ -1,5 +1,3 @@
-
-
 async function fetchPage({canonicalURL, requestURL, requestOptions, headers}) {
     if (!requestOptions) requestOptions = {method: "GET", headers};
     if (!canonicalURL) canonicalURL = requestURL;
@@ -13,6 +11,7 @@ async function fetchPage({canonicalURL, requestURL, requestOptions, headers}) {
             };
         });
 }
+
 const extractValue = (html, key) => {
     const pattern = new RegExp(`(?<=${key}\\|)(.*?)(?=\\|)`, 'g');
     const match = pattern.exec(html);
@@ -45,9 +44,11 @@ const getViewStateFromResponse = async function({ responsePage }) {
     setSharedVariable('viewstate', viewstate);
     setSharedVariable('viewstategenerator', viewstategenerator);
     setSharedVariable('eventvalidation', eventvalidation);
+
 };
 
-const createLinks = async function ({ argument, canonicalURL, headers }) {
+
+const createLinks = async function ({ argument, responsePage}) {
     let html = await responsePage.response.buffer();
     responsePage.response = new fetch.Response(html, responsePage.response);
 
@@ -70,6 +71,32 @@ const createLinks = async function ({ argument, canonicalURL, headers }) {
     // Return the modified HTML
     return responsePage;
 };
+
+const createDocumentLinks = async function ({ argument, responsePage}) {
+    let html = await responsePage.response.buffer();
+    responsePage.response = new fetch.Response(html, responsePage.response);
+
+    const $ = cheerio.load(html);
+    $('.row.p-1 a').each((index, element) => {
+        const anchorTag = $(element);
+        const onclickAttr = anchorTag.attr('onclick');
+        const token = onclickAttr.match(/tokenDocumento=([^']+)/)[1];
+        const newURL = `https://samai.consejodeestado.gov.co/PaginasTransversales/VerProvidencia.aspx?tokenDocumento=${token}`;
+        
+        // Update the href attribute with the new URL
+        anchorTag.attr('href', newURL);
+        
+        // Remove the onclick attribute
+        anchorTag.removeAttr('onclick');
+    });
+    responsePage.response = new fetch.Response($.html(), responsePage.response);
+
+    // Return the modified HTML
+    return responsePage;
+}
+
+
+
 
 
 
@@ -94,6 +121,14 @@ const getHome = async function ({argument, canonicalURL, headers}) {
     await getViewStateFromResponse({responsePage});
     return responsePage;
 };
+
+
+/*
+//document type
+*/
+
+
+
 
 
 const getDocumentType = async function ({argument, canonicalURL, headers}) {
@@ -161,7 +196,6 @@ const getDocumentType = async function ({argument, canonicalURL, headers}) {
 
 
 const searchDate = async function ({argument, canonicalURL, headers}) {
-
         let customHeaders = {
                     "cache-control": "no-cache",
                     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -328,7 +362,7 @@ const getPagination = async function ({argument, canonicalURL, headers}) {
     data["ctl00$MainContent$NormaDemandadaTextBox"] = ``;
     data["ctl00$MainContent$ResultadoBusqueda1$CorreoTextBox"] = ``;
     data["ctl00$MainContent$ResultadoBusqueda1$OrdenRegistrosDropDownList"] = `FechaProvidencia desc`;
-    data["ctl00$MainContent$ResultadoBusqueda1$IrAPaginaTextBox"] = `${argument.page}`;;
+    data["ctl00$MainContent$ResultadoBusqueda1$IrAPaginaTextBox"] = `${argument.page}`;
     data["ctl00$TmpPerfilGestion"] = ``;
     data["__ASYNCPOST"] = `true`;
     let body = querystring.stringify(data);
@@ -365,32 +399,30 @@ const getMainDocument = async function ({argument, canonicalURL, headers}) {
     return responsePage;
 };
 
-const getEngine = async function ({argument ,canonicalURL, headers}) {
+const getEngine = async function ({argument, canonicalURL, headers}) {
         await getHome({canonicalURL, headers});
         await getDocumentType({canonicalURL, headers});
         await searchDate({argument ,canonicalURL, headers});
-        let responsePage = await getSearch({canonicalURL, headers});
+        let responsePage = await getSearch({argument ,canonicalURL, headers});
+        responsePage = await createLinks({argument, responsePage})
+        responsePage = await createDocumentLinks({argument, responsePage})
         //let responsePage = await getDocument({canonicalURL, headers});
         return responsePage;
 
 }
 
-const getEnginePagination = async function ({argument, canonicalURL, headers}) {
+const getEnginePagination = async function ({argument ,canonicalURL, headers}) {
     await getHome({canonicalURL, headers});
     await getDocumentType({canonicalURL, headers});
-    await searchDate({argument, canonicalURL, headers});
-    await getSearch({canonicalURL, headers});
-    let responsePage = await getPagination({argument, canonicalURL, headers});
+    await searchDate({argument ,canonicalURL, headers});
+    await getSearch({argument ,canonicalURL, headers});
+    let responsePage = await getPagination({argument ,canonicalURL, headers});
+    responsePage = await createDocumentLinks({argument, responsePage})
     return responsePage;
 
 }
 
-
-
     
-
-
-
 async function fetchURL({ canonicalURL, headers }) {
 
     let patt2 = /https:\/\/samai\.consejodeestado\.gov\.co\/TitulacionRelatoria\/BuscadorProvidenciasTituladas\.aspx\?type=caqueta\&from=([0-9]{4}-[0-9]{2}-[0-9]{2})\&to=([0-9]{4}-[0-9]{2}-[0-9]{2})$/;
@@ -421,4 +453,3 @@ async function fetchURL({ canonicalURL, headers }) {
         return [responsePage];
     }
 
-}
